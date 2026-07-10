@@ -51,8 +51,8 @@ if uploaded_file is not None:
     # Result
     st.markdown("<hr>", unsafe_allow_html=True)
 
-    if prediction > 0.5:
-        confidence = prediction * 100
+    if prediction < 0.5:
+        confidence = (1-prediction) * 100
         st.markdown(f"""
             <div style='background-color:#e6f4ea; padding:20px; border-radius:10px; text-align:center;'>
                 <h2 style='color:#2e7d32;'>✅ Real Image</h2>
