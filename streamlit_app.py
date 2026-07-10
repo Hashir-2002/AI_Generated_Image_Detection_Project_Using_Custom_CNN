@@ -73,6 +73,7 @@ if uploaded_file is not None:
     st.markdown("**Prediction confidence:**")
     st.progress(float(prediction))
     st.caption("Real ◀──────────────▶ AI Generated")
+    st.write(f"Raw prediction value: {prediction}")
 
 # Footer
 st.markdown("""
