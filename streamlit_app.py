@@ -1,7 +1,8 @@
 import streamlit as st
 import numpy as np
 from PIL import Image
-import tflite_runtime.interpreter as tflite
+import tensorflow as tf
+tflite = tf.lite
 
 # Load TFLite model
 interpreter = tflite.Interpreter(model_path='ai_image_detector.tflite')
