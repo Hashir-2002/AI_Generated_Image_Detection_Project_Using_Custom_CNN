@@ -1,10 +1,16 @@
 import streamlit as st
-import tensorflow as tf
 import numpy as np
 from PIL import Image
+import tflite_runtime.interpreter as tflite
 
-# Load model
-model = tf.keras.models.load_model('ai_image_detector.h5')
+# Load TFLite model
+interpreter = tflite.Interpreter(model_path='ai_image_detector.tflite')
+interpreter.allocate_tensors()
+
+# Get input and output details
+input_details = interpreter.get_input_details()
+output_details = interpreter.get_output_details()
+
 IMG_SIZE = 64
 
 # Page config
@@ -24,21 +30,22 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Upload
-uploaded_file = st.file_uploader("Please Upload an image", type=["jpg", "jpeg", "png"])
+uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
 
 if uploaded_file is not None:
-    # Show image
     image = Image.open(uploaded_file).convert('RGB')
     st.image(image, caption="Uploaded Image", use_column_width=True)
 
     # Preprocess
     img = image.resize((IMG_SIZE, IMG_SIZE))
-    img_array = np.array(img) / 255.0
+    img_array = np.array(img, dtype=np.float32) / 255.0
     img_array = np.expand_dims(img_array, axis=0)
 
     # Predict
     with st.spinner("Analyzing image..."):
-        prediction = model.predict(img_array)[0][0]
+        interpreter.set_tensor(input_details[0]['index'], img_array)
+        interpreter.invoke()
+        prediction = interpreter.get_tensor(output_details[0]['index'])[0][0]
 
     # Result
     st.markdown("<hr>", unsafe_allow_html=True)
@@ -64,12 +71,12 @@ if uploaded_file is not None:
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown("**Prediction confidence:**")
     st.progress(float(prediction))
-    st.caption(f"Real ◀──────────────▶ AI Generated")
+    st.caption("Real ◀──────────────▶ AI Generated")
 
 # Footer
 st.markdown("""
     <hr>
     <p style='text-align:center; color:gray; font-size:13px;'>
-        Built with TensorFlow + Streamlit · CIFAKE Dataset · CNN Classifier
+        Built with TFLite + Streamlit · CIFAKE Dataset · CNN Classifier
     </p>
 """, unsafe_allow_html=True)
